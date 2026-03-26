@@ -574,6 +574,14 @@ git merge upstream/main
 
 ---
 
+## 开发编译版插件安装
+
+如安装 `@tencent-connect/openclaw-qqbot@latest`
+
+```
+node dist/index.js plugins install @tencent-connect/openclaw-qqbot@latest
+```
+
 ## 贡献指南
 
 欢迎贡献代码，特别是：
