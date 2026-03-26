@@ -57,7 +57,7 @@ export function shouldUseShellForCommand(cmd, platform = process.platform) {
   if (platform !== "win32") {
     return false;
   }
-  const extension = path.extname(cmd).toLowerCase();
+  const extension = path.extname(`${cmd}`).toLowerCase();
   return WINDOWS_SHELL_EXTENSIONS.has(extension);
 }
 
@@ -92,7 +92,7 @@ function createSpawnOptions(cmd, args, envOverride) {
 function run(cmd, args) {
   let child;
   try {
-    child = spawn(cmd, args, createSpawnOptions(cmd, args));
+    child = spawn(`"${cmd}"`, args, createSpawnOptions(cmd, args));
   } catch (err) {
     console.error(`Failed to launch ${cmd}:`, err);
     process.exit(1);
