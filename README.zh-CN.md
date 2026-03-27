@@ -579,7 +579,7 @@ git merge upstream/main
 如安装 `@tencent-connect/openclaw-qqbot@latest`
 
 ```
-node dist/index.js plugins install @tencent-connect/openclaw-qqbot@latest
+pnpm openclaw plugins install @tencent-connect/openclaw-qqbot@latest
 ```
 
 ## 贡献指南
