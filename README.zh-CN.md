@@ -224,12 +224,6 @@ AskOnce 一次提问多模型回答
 | `onboard.sh`            | 配置认证向导         | 步骤 4、5：选择平台（deepseek-web 等），捕获 Cookie/Token         |
 | `server.sh`             | 管理 Gateway 服务    | 步骤 6 及日常：`start` / `stop` / `restart` / `status`，端口 3001 |
 
-| 脚本                    | 用途                 | 使用场景                                                          |
-| ----------------------- | -------------------- | ----------------------------------------------------------------- |
-| `start-chrome-debug.sh` | 启动 Chrome 调试模式 | 步骤 2：打开浏览器，端口 9222，供各平台登录与 onboard 连接        |
-| `onboard.sh`            | 配置认证向导         | 步骤 4、5：选择平台（deepseek-web 等），捕获 Cookie/Token         |
-| `server.sh`             | 管理 Gateway 服务    | 步骤 6 及日常：`start` / `stop` / `restart` / `status`，端口 3001 |
-
 ### 安装说明
 
 #### 克隆仓库
