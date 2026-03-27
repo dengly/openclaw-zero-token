@@ -1,22 +1,22 @@
-import { loginGrokWeb } from "../providers/grok-web-auth.js";
+import { loginPerplexityWeb } from "../providers/perplexity-web-auth.js";
 import type { ApplyAuthChoiceParams, ApplyAuthChoiceResult } from "./auth-choice.apply.js";
-import { applyGrokWebConfig } from "./onboard-auth.config-core.js";
-import { setGrokWebCookie } from "./onboard-auth.credentials.js";
+import { applyPerplexityWebConfig } from "./onboard-auth.config-core.js";
+import { setPerplexityWebCookie } from "./onboard-auth.credentials.js";
 import { openUrl } from "./onboard-helpers.js";
 
-export async function applyAuthChoiceGrokWeb(
+export async function applyAuthChoicePerplexityWeb(
   params: ApplyAuthChoiceParams,
 ): Promise<ApplyAuthChoiceResult | null> {
-  if (params.authChoice !== "grok-web") {
+  if (params.authChoice !== "perplexity-web") {
     return null;
   }
 
   const { prompter, runtime, config, agentDir, opts } = params;
-  let cookie = opts?.grokWebCookie?.trim();
+  let cookie = opts?.perplexityWebCookie?.trim();
 
   if (!cookie) {
     const mode = await prompter.select({
-      message: "Grok Auth Mode",
+      message: "Perplexity Auth Mode",
       options: [
         {
           value: "auto",
@@ -30,7 +30,7 @@ export async function applyAuthChoiceGrokWeb(
     if (mode === "auto") {
       const spin = prompter.progress("Preparing automated login...");
       try {
-        const result = await loginGrokWeb({
+        const result = await loginPerplexityWeb({
           onProgress: (msg) => spin.update(msg),
           openUrl: async (url) => {
             await openUrl(url);
@@ -39,7 +39,7 @@ export async function applyAuthChoiceGrokWeb(
         });
         spin.stop("Login captured successfully!");
         const authData = JSON.stringify({ cookie: result.cookie, userAgent: result.userAgent });
-        await setGrokWebCookie({ cookie: authData }, agentDir);
+        await setPerplexityWebCookie({ cookie: authData }, agentDir);
         cookie = authData;
       } catch (err) {
         spin.stop("Automated login failed.");
@@ -55,26 +55,25 @@ export async function applyAuthChoiceGrokWeb(
     if (!cookie) {
       await prompter.note(
         [
-          "To use Grok Browser, you need cookies from grok.com.",
-          "1. Login to https://grok.com in your browser",
+          "To use Perplexity Browser, you need cookies from perplexity.ai.",
+          "1. Login to https://www.perplexity.ai in your browser",
           "2. Open DevTools (F12) -> Application -> Cookies",
           "3. Copy all cookies",
         ].join("\n"),
-        "Grok Login",
+        "Perplexity Login",
       );
       cookie = await prompter.text({
         message: "Paste cookies",
-        hint: "All cookies from grok.com",
         placeholder: "...",
         validate: (value) => (value.trim().length > 0 ? undefined : "Required"),
       });
       const authData = JSON.stringify({ cookie, userAgent: "Mozilla/5.0" });
-      await setGrokWebCookie({ cookie: authData }, agentDir);
+      await setPerplexityWebCookie({ cookie: authData }, agentDir);
     }
   } else {
-    await setGrokWebCookie({ cookie }, agentDir);
+    await setPerplexityWebCookie({ cookie }, agentDir);
   }
 
-  const nextConfig = await applyGrokWebConfig(config);
+  const nextConfig = applyPerplexityWebConfig(config);
   return { config: nextConfig };
 }

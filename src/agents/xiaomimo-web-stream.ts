@@ -465,10 +465,16 @@ export function createXiaomiMimoWebStreamFn(cookieOrJson: string): StreamFn {
         }
 
         if (tagBuffer) {
-          const tMode = currentMode as "text" | "thinking" | "tool_call" | "error";
-          const mode =
-            tMode === "thinking" ? "thinking" : tMode === "tool_call" ? "toolcall" : "text";
-          emitDelta(mode, tagBuffer);
+          // TypeScript narrows currentMode to "text" inside the conditional due to the
+          // control-flow analysis on the closure. Cast through unknown to bypass.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const resolvedMode =
+            (currentMode as string) === "thinking"
+              ? ("thinking" as const)
+              : (currentMode as string) === "tool_call"
+                ? ("toolcall" as const)
+                : ("text" as const);
+          emitDelta(resolvedMode, tagBuffer);
         }
 
         console.log(
