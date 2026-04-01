@@ -11,8 +11,8 @@ import chalk from "chalk";
 import type { Command } from "commander";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk/askonce";
 import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/askonce";
-import { ConsoleFormatter, MarkdownFormatter, JsonFormatter } from "../askonce/formatters/index.js";
-import { QueryOrchestrator } from "../askonce/query-orchestrator.js";
+import { ConsoleFormatter, MarkdownFormatter, JsonFormatter } from "./askonce/formatters/index.js";
+import { QueryOrchestrator } from "./askonce/query-orchestrator.js";
 
 /**
  * 自动检测并设置 OPENCLAW_STATE_DIR
@@ -48,8 +48,9 @@ const askoncePlugin = {
   configSchema: emptyPluginConfigSchema(),
   register(api: OpenClawPluginApi) {
     // 注册 CLI 命令
-    api.registerCli((ctx) => {
-      ctx.program
+    api.registerCli(
+      (ctx) => {
+        ctx.program
         .command("askonce [question...]")
         .alias("ask")
         .description("一次提问，获取所有大模型答案")
@@ -63,7 +64,9 @@ const askoncePlugin = {
         .action(async (question: string[] | undefined, options) => {
           await runAskOnce(ctx.program, options, question);
         });
-    });
+      },
+      { commands: ["askonce", "ask"] }
+    );
   },
 };
 

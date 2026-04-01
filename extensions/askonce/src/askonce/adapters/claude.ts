@@ -2,8 +2,11 @@
  * Claude Web 适配器
  */
 
-import { ensureAuthProfileStore, listProfilesForProvider } from "../../agents/auth-profiles.js";
-import { createClaudeWebStreamFn } from "../../agents/claude-web-stream.js";
+import {
+  ensureAuthProfileStore,
+  listProfilesForProvider,
+} from "../../../../../src/agents/auth-profiles.js";
+import { createClaudeWebStreamFn } from "../../../../../src/zero-token/streams/claude-web-stream.js";
 import type { ModelResponse, AdapterQueryOptions } from "../types.js";
 import { BaseAdapter } from "./base.js";
 export class ClaudeAdapter extends BaseAdapter {

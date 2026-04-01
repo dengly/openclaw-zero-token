@@ -2,8 +2,11 @@
  * Doubao (豆包) Web 适配器
  */
 
-import { ensureAuthProfileStore, listProfilesForProvider } from "../../agents/auth-profiles.js";
-import { createDoubaoWebStreamFn } from "../../agents/doubao-web-stream.js";
+import {
+  ensureAuthProfileStore,
+  listProfilesForProvider,
+} from "../../../../../src/agents/auth-profiles.js";
+import { createDoubaoWebStreamFn } from "../../../../../src/zero-token/streams/doubao-web-stream.js";
 import type { ModelResponse, AdapterQueryOptions } from "../types.js";
 import { BaseAdapter } from "./base.js";
 

@@ -11,6 +11,10 @@ English | [简体中文](README.zh-CN.md)
 ## Table of Contents
 
 - [Overview](#overview)
+- [Zero Token docs (index)](docs/zero-token/index.md)
+- [Product requirements (tracking, 中文)](docs/zero-token/zero-token-requirements.md)
+- [Upstream sync (Zero Token)](docs/zero-token/upstream-sync.md)
+- [Web models browser modes](docs/zero-token/web-models-browser-modes.md)
 - [How It Works](#how-it-works)
 - [Quick Start](#quick-start)
 - [Usage](#usage)
@@ -178,7 +182,7 @@ Daily:
 | ----------------------- | -------------------------- | ------------------------------------------------------------------------ |
 | `start-chrome-debug.sh` | Start Chrome in debug mode | Step 2: open browser on port 9222 for logins + onboarding                |
 | `onboard.sh`            | Auth/onboarding wizard     | Step 4/5: select provider (e.g. `deepseek-web`) and capture credentials  |
-| `server.sh`             | Manage gateway service     | Step 5 & daily use: `start` / `stop` / `restart` / `status` on port 3002 |
+| `server.sh`             | Manage gateway service     | Step 5 & daily use: `start` / `stop` / `restart` / `status` on port 3001 |
 
 ### Installation
 
@@ -241,6 +245,8 @@ node openclaw.mjs onboard
 # To add more providers later, just run ./onboard.sh webauth again.
 ```
 
+When the wizard prints **Authorization complete** (or per-provider success lines), you are finished: the shell prompt should return. If the Node process **does not exit** (known issue with some browser CDP sessions), press **Ctrl+C**—credentials and config updates are already written by then.
+
 Follow the prompts (choose e.g. **DeepSeek (Browser Login)** and **Automated Login (Recommended)**).  
 To add more providers later, just run `./onboard.sh webauth` again.
 
@@ -280,6 +286,8 @@ Use `/model` inside the chat box:
 /model deepseek-web/deepseek-chat
 ```
 
+> **Claude Web:** Prefer the **full model id**: `/model claude-web/claude-sonnet-4-6` (matches the catalog default). `/model claude-web` alone can fail to resolve or pick the intended model in some setups.
+
 #### List available models
 
 ```bash
@@ -307,7 +315,7 @@ deepseek-web/deepseek-chat                 text       64k      no    no    confi
 ### HTTP API
 
 ```bash
-curl http://127.0.0.1:3002/v1/chat/completions \
+curl http://127.0.0.1:3001/v1/chat/completions \
   -H "Authorization: Bearer YOUR_GATEWAY_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -362,7 +370,7 @@ node openclaw.mjs tui
     }
   },
   "gateway": {
-    "port": 3002,
+    "port": 3001,
     "auth": {
       "mode": "token",
       "token": "your-gateway-token"
@@ -426,7 +434,7 @@ The doctor command will:
 
 To add a new web provider you usually need:
 
-### 1. Auth module (`src/providers/{platform}-web-auth.ts`)
+### 1. Auth module (`src/zero-token/providers/{platform}-web-auth.ts`)
 
 ```ts
 export async function loginPlatformWeb(params: {
@@ -437,7 +445,7 @@ export async function loginPlatformWeb(params: {
 }
 ```
 
-### 2. API client (`src/providers/{platform}-web-client.ts`)
+### 2. API client (`src/zero-token/providers/{platform}-web-client*.ts`)
 
 ```ts
 export class PlatformWebClient {
@@ -449,7 +457,7 @@ export class PlatformWebClient {
 }
 ```
 
-### 3. Stream handler (`src/agents/{platform}-web-stream.ts`)
+### 3. Stream handler (`src/zero-token/streams/{platform}-web-stream.ts`) and register it in `web-stream-factories.ts`
 
 ```ts
 export function createPlatformWebStreamFn(credentials: string): StreamFn {
@@ -464,11 +472,11 @@ export function createPlatformWebStreamFn(credentials: string): StreamFn {
 ```text
 openclaw-zero-token/
 ├── src/
-│   ├── providers/
-│   │   ├── deepseek-web-auth.ts          # DeepSeek login capture
-│   │   └── deepseek-web-client.ts        # DeepSeek API client
+│   ├── zero-token/
+│   │   ├── providers/                    # Web clients + *-web-auth.ts
+│   │   └── streams/                      # *-web-stream.ts + web-stream-factories.ts
 │   ├── agents/
-│   │   └── deepseek-web-stream.ts        # Streaming response handling
+│   │   └── web-stream-factories.ts       # Re-export (stable import for runner)
 │   ├── commands/
 │   │   └── auth-choice.apply.deepseek-web.ts  # Auth flow
 │   └── browser/
@@ -493,6 +501,8 @@ openclaw-zero-token/
 ---
 
 ## Sync With Upstream OpenClaw
+
+For a Zero Token–specific file checklist and merge playbook, see **[Upstream sync (Zero Token)](docs/zero-token/upstream-sync.md)**.
 
 This project is based on OpenClaw. To sync upstream changes:
 

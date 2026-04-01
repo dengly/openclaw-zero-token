@@ -2,8 +2,11 @@
  * DeepSeek Web 适配器
  */
 
-import { ensureAuthProfileStore, listProfilesForProvider } from "../../agents/auth-profiles.js";
-import { createDeepseekWebStreamFn } from "../../agents/deepseek-web-stream.js";
+import {
+  ensureAuthProfileStore,
+  listProfilesForProvider,
+} from "../../../../../src/agents/auth-profiles.js";
+import { createDeepseekWebStreamFn } from "../../../../../src/zero-token/streams/deepseek-web-stream.js";
 import type { ModelResponse, AdapterQueryOptions } from "../types.js";
 import { BaseAdapter } from "./base.js";
 

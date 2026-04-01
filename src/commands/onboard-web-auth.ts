@@ -13,21 +13,21 @@ import { ensureOpenClawModelsJson } from "../agents/models-config.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadConfig, writeConfigFile } from "../config/io.js";
 import { resolveAgentModelPrimaryValue } from "../config/model-input.js";
-import { loginChatGPTWeb } from "../providers/chatgpt-web-auth.js";
-// 导入各个 web 模型的登录函数
-import { loginClaudeWeb } from "../providers/claude-web-auth.js";
-import { loginDeepseekWeb } from "../providers/deepseek-web-auth.js";
-import { loginDoubaoWeb } from "../providers/doubao-web-auth.js";
-import { loginGeminiWeb } from "../providers/gemini-web-auth.js";
-import { loginGlmIntlWeb } from "../providers/glm-intl-web-auth.js";
-import { loginZWeb } from "../providers/glm-web-auth.js";
-import { loginGrokWeb } from "../providers/grok-web-auth.js";
-import { loginKimiWeb } from "../providers/kimi-web-auth.js";
-import { loginPerplexityWeb } from "../providers/perplexity-web-auth.js";
-import { loginQwenCNWeb } from "../providers/qwen-cn-web-auth.js";
-import { loginQwenWeb } from "../providers/qwen-web-auth.js";
-import { loginXiaomiMimoWeb } from "../providers/xiaomimo-web-auth.js";
 import type { WizardStep } from "../wizard/types.js";
+import { loginChatGPTWeb } from "../zero-token/providers/chatgpt-web-auth.js";
+// 导入各个 web 模型的登录函数
+import { loginClaudeWeb } from "../zero-token/providers/claude-web-auth.js";
+import { loginDeepseekWeb } from "../zero-token/providers/deepseek-web-auth.js";
+import { loginDoubaoWeb } from "../zero-token/providers/doubao-web-auth.js";
+import { loginGeminiWeb } from "../zero-token/providers/gemini-web-auth.js";
+import { loginGlmIntlWeb } from "../zero-token/providers/glm-intl-web-auth.js";
+import { loginZWeb } from "../zero-token/providers/glm-web-auth.js";
+import { loginGrokWeb } from "../zero-token/providers/grok-web-auth.js";
+import { loginKimiWeb } from "../zero-token/providers/kimi-web-auth.js";
+import { loginPerplexityWeb } from "../zero-token/providers/perplexity-web-auth.js";
+import { loginQwenCNWeb } from "../zero-token/providers/qwen-cn-web-auth.js";
+import { loginQwenWeb } from "../zero-token/providers/qwen-web-auth.js";
+import { loginXiaomiMimoWeb } from "../zero-token/providers/xiaomimo-web-auth.js";
 import { applyAgentDefaultModelPrimary } from "./onboard-auth.config-shared.js";
 
 // Web 模型凭证保存助手函数
@@ -133,6 +133,13 @@ async function syncModelsProvidersToConfig(): Promise<void> {
     return;
   }
 
+  // Filter out web providers — they are handled by zero-token bridge, not upstream config
+  const webProviderIds = new Set(WEB_MODEL_PROVIDERS.map((p) => p.id));
+  const filtered = Object.fromEntries(
+    Object.entries(providers).filter(([k]) => !webProviderIds.has(k)),
+  );
+  providers = filtered;
+
   if (Object.keys(providers).length === 0) {
     return;
   }
@@ -144,6 +151,8 @@ async function syncModelsProvidersToConfig(): Promise<void> {
       mode: config.models?.mode ?? "merge",
       providers: { ...config.models?.providers, ...providers },
     },
+    // Preserve existing agents.defaults.models whitelist — do NOT overwrite it.
+    agents: config.agents,
   };
 
   // 若尚未设置主模型，使用首个 web provider 的首个模型，避免回退到 anthropic

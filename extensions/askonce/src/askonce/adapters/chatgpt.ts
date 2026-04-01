@@ -2,8 +2,11 @@
  * ChatGPT Web 适配器
  */
 
-import { ensureAuthProfileStore, listProfilesForProvider } from "../../agents/auth-profiles.js";
-import { createChatGPTWebStreamFn } from "../../agents/chatgpt-web-stream.js";
+import {
+  ensureAuthProfileStore,
+  listProfilesForProvider,
+} from "../../../../../src/agents/auth-profiles.js";
+import { createChatGPTWebStreamFn } from "../../../../../src/zero-token/streams/chatgpt-web-stream.js";
 import type { ModelResponse, AdapterQueryOptions } from "../types.js";
 import { BaseAdapter } from "./base.js";
 
