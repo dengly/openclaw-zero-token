@@ -33,7 +33,7 @@
   "gateway": {
     "port": 3001,
     "mode": "local",
-    "bind": "loopback",
+    "bind": "lan",
     "auth": {
       "mode": "token",
       "token": "62b791625fa441be036acd3c206b7e14e2bb13c803355823"
@@ -48,6 +48,11 @@
           "enabled": true
         }
       }
+    },
+    "controlUi":{
+      "allowedOrigins": ["http://127.0.0.1:3001"],
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
     }
   },
   "tools": {
