@@ -581,14 +581,14 @@ git merge upstream/main
 ---
 
 ## 开发编译版插件安装
-参考 https://github.com/linuxhsj/openclaw-zero-token/issues/49
+参考 https://github.com/linuxhsj/openclaw-zero-token/issues/49 和 https://github.com/linuxhsj/openclaw-zero-token/issues/70
 
-使用 `node dist/index.mjs` 替代 `openclaw` 部分 例如 `openclaw status` -> `node dist/index.mjs status`
+使用 `node dist/index.mjs` 替代 `openclaw` 部分 例如 `openclaw status` -> `node dist/index.js status`
 
 如安装 `@tencent-connect/openclaw-qqbot@latest`
 
 ```
-node dist/index.mjs plugins install @tencent-connect/openclaw-qqbot@latest
+node dist/index.js plugins install @tencent-connect/openclaw-qqbot@latest
 ```
 
 ## 贡献指南
