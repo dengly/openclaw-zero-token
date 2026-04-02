@@ -585,11 +585,28 @@ git merge upstream/main
 
 使用 `node dist/index.mjs` 替代 `openclaw` 部分 例如 `openclaw status` -> `node dist/index.js status`
 
-如安装 `@tencent-connect/openclaw-qqbot@latest`
+### 安装QQ Bot
+参考 https://q.qq.com/qqbot/openclaw/
+安装 `@tencent-connect/openclaw-qqbot@latest`
 
+1. 在工程源代码目录下执行以下指令
 ```
 node dist/index.js plugins install @tencent-connect/openclaw-qqbot@latest
 ```
+
+2. 配置绑定当前QQ机器人
+```
+node dist/index.js channels add --channel qqbot --token "你的配置信息"
+```
+
+3. 经过步骤2后默认会安装在你的用户跟目录下，windows如下格式
+```
+C:\Users\你的用户名\.openclaw\extensions\openclaw-qqbot
+```
+将`openclaw-qqbot`复制你的代码目录下的`.openclaw-upstream-state\extensions`目录内
+
+4. 复制配置，将`C:\Users\你的用户名\.openclaw\openclaw.json`的`channels`和`plugins`复制到`.openclaw-upstream-state\openclaw.json`内，`plugins.allow`数组添加`openclaw-qqbot`，修改`plugins.installs.openclaw-qqbot.installPath`值为`openclaw-qqbot`目录的绝对路径（代码那个）
+
 
 ## 贡献指南
 
