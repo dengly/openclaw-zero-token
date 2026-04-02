@@ -451,7 +451,7 @@ node openclaw.mjs tui
 **如果项目已经运行过，但遇到目录或文件缺失问题，运行诊断命令：**
 
 ```bash
-node dist/index.mjs doctor
+node dist/index.js doctor
 ```
 
 **诊断命令会自动：**
@@ -581,11 +581,14 @@ git merge upstream/main
 ---
 
 ## 开发编译版插件安装
+参考 https://github.com/linuxhsj/openclaw-zero-token/issues/49
+
+使用 `node dist/index.mjs` 替代 `openclaw` 部分 例如 `openclaw status` -> `node dist/index.mjs status`
 
 如安装 `@tencent-connect/openclaw-qqbot@latest`
 
 ```
-pnpm openclaw plugins install @tencent-connect/openclaw-qqbot@latest
+node dist/index.mjs plugins install @tencent-connect/openclaw-qqbot@latest
 ```
 
 ## 贡献指南
