@@ -143,10 +143,10 @@ ls -lh dist/index.mjs
 
 ```bash
 # 查看配置文件（如果存在）
-cat .openclaw-zero-state/openclaw.json
+cat ~/.openclaw/openclaw.json
 
 # 查看认证配置（如果存在）
-cat .openclaw-zero-state/agents/main/agent/auth-profiles.json
+cat ~/.openclaw/agents/main/agent/auth-profiles.json
 ```
 
 > 关键规则：只有在 `./onboard.sh webauth` 中完成配置的平台，才会被写入 `openclaw.json` 并出现在最终 `/models` 列表中。

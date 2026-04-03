@@ -4,8 +4,6 @@
 # 兼容 macOS / Linux (含 Deepin) / Windows (Git Bash / WSL)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-STATE_DIR="$SCRIPT_DIR/.openclaw-upstream-state"
-CONFIG_FILE="$STATE_DIR/openclaw.json"
 
 # ─── 环境检测 ────────────────────────────────────────────────
 detect_os() {
@@ -22,6 +20,18 @@ detect_os() {
   esac
 }
 
+OS=$(detect_os)
+
+STATE_DIR="$SCRIPT_DIR/.openclaw-upstream-state"
+
+if [ "$OS" == "win" ]; then
+  STATE_DIR="$HOME/.openclaw"
+else
+  STATE_DIR="~/.openclaw"
+fi
+
+CONFIG_FILE="$STATE_DIR/openclaw.json"
+
 detect_node() {
   if command -v node >/dev/null 2>&1; then
     echo "$(command -v node)"
@@ -36,7 +46,6 @@ detect_node() {
   echo ""
 }
 
-OS=$(detect_os)
 NODE=$(detect_node)
 
 if [ -z "$NODE" ]; then

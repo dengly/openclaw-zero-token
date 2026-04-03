@@ -16,7 +16,7 @@
   "agents": {
     "defaults": {
       "models": {},
-      "workspace": "~/.openclaw-zero/workspace"
+      "workspace": "~/.openclaw/workspace"
     }
   },
   "ui": {

@@ -61,7 +61,7 @@
 │   $ ./onboard.sh webauth                                                                  │
 │                                                                                             │
 │   1. 设置环境变量                                                                           │
-│      OPENCLAW_CONFIG_PATH=.openclaw-state/openclaw.json                                     │
+│      OPENCLAW_CONFIG_PATH=~/.openclaw/openclaw.json                                        │
 │      OPENCLAW_STATE_DIR=.openclaw-state                                                     │
 │                                                                                             │
 │   2. 运行 dist/index.mjs onboard                                                           │
@@ -119,7 +119,7 @@
 │   $ ./server.sh start                                                                       │
 │                                                                                             │
 │   1. 设置环境变量                                                                           │
-│      OPENCLAW_CONFIG_PATH=.openclaw-state/openclaw.json                                      │
+│      OPENCLAW_CONFIG_PATH=~/.openclaw/openclaw.json                                         │
 │      OPENCLAW_STATE_DIR=.openclaw-state                                                     │
 │      OPENCLAW_GATEWAY_PORT=3001                                                             │
 │                                                                                             │
@@ -160,9 +160,9 @@
 │   │                                                                                     │   │
 │   │  1. 读取 openclaw.json 中的 models.providers                                        │   │
 │   │     ┌─────────────────────────────────────────────────────────────────────────┐     │   │
-│   │     │  .openclaw-state/openclaw.json                                           │     │   │
-│   │     │                                                                           │     │   │
-│   │     │  models.providers:                                                        │     │   │
+│   │     │  ~/.openclaw/openclaw.json                                              │     │   │
+│   │     │                                                                          │     │   │
+│   │     │  models.providers:                                                       │     │   │
 │   │     │    deepseek-web:  { baseUrl, api, models: [...] }                        │     │   │
 │   │     │    claude-web:    { baseUrl, api, models: [...] }                        │     │   │
 │   │     │    chatgpt-web:   { baseUrl, api, models: [...] }                        │     │   │
@@ -292,7 +292,7 @@
 │  └──────────│────────────────────────────────────│──────────────────────────────────────┘   │
 │             │                                    │                                          │
 │  ┌──────────┴─────────┐                          │                                          │
-│  │ .openclaw-state/   │                          │                                          │
+│  │ ~/.openclaw/       │                          │                                          │
 │  │ openclaw.json      │                          │                                          │
 │  │                    │                          │                                          │
 │  │ models.providers:  │──────────────────────────┘                                          │

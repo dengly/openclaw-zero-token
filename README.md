@@ -211,10 +211,10 @@ pnpm ui:build
 ```bash
 # (Optional but recommended before the very first ./onboard.sh webauth)
 # Copy the example config to your local state directory:
-# cp .openclaw-state.example/openclaw.json .openclaw-upstream-state/openclaw.json
+# cp .openclaw-state.example/openclaw.json ~/.openclaw/openclaw.json
 
 # On first run, onboard.sh will prompt whether to copy the configuration file, just select yes.
-# It will copy .openclaw-state.example/openclaw.json to .openclaw-upstream-state/openclaw.json;
+# It will copy .openclaw-state.example/openclaw.json to ~/.openclaw/openclaw.json;
 # for non-first runs, there's no need to copy these configuration files.
 
 # Start Chrome in debug mode
@@ -482,11 +482,12 @@ openclaw-zero-token/
 │   └── browser/
 │       └── chrome.ts                     # Chrome automation
 ├── ui/                                   # Web UI (Lit 3.x)
-├── .openclaw-zero-state/                 # Local state (ignored)
-│   ├── openclaw.json                     # Config
-│   └── agents/main/agent/
-│       └── auth.json                     # Credentials (sensitive)
 └── .gitignore                            # Includes .openclaw-zero-state/
+
+~/.openclaw/
+    ├── openclaw.json                     # Config
+    └── agents/main/agent/
+        └── auth.json                     # Credentials (sensitive)
 ```
 
 ---
