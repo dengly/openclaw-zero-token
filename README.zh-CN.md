@@ -259,6 +259,15 @@ pnpm build
 pnpm ui:build
 ```
 
+生成全局使用
+```
+pnpm link --global 
+```
+或
+```
+npm link
+```
+
 #### 步骤 2：配置认证
 
 ```bash
