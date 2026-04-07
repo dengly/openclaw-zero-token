@@ -126,77 +126,35 @@ export class GeminiWebClientBrowser {
       throw new Error("GeminiWebClientBrowser not initialized");
     }
 
-    const sent = await this.page.evaluate((msg: string) => {
-      // 输入框：优先匹配 Gemini 占位符，再通用选择器（参考 Scrapling 多策略）
-      const inputSelectors = [
-        'textarea[placeholder*="Gemini"]',
-        'textarea[placeholder*="问问"]',
-        'textarea[aria-label*="prompt"]',
-        'textarea[aria-label*="message"]',
-        "textarea",
-        'div[role="textbox"]',
-        '[contenteditable="true"][aria-label*="message"]',
-      ];
-      let inputEl: HTMLElement | null = null;
-      for (const sel of inputSelectors) {
-        const el = document.querySelector(sel);
-        if (el && (el as HTMLElement).offsetParent !== null) {
-          inputEl = el as HTMLElement;
-          break;
-        }
-      }
-      if (!inputEl) {
-        return { ok: false, error: "找不到输入框" };
-      }
+    const page = this.page;
 
-      inputEl.focus();
-      if (inputEl.tagName === "TEXTAREA" || (inputEl as HTMLInputElement).tagName === "INPUT") {
-        (inputEl as HTMLTextAreaElement).value = msg;
-        (inputEl as HTMLTextAreaElement).dispatchEvent(new Event("input", { bubbles: true }));
-      } else {
-        inputEl.innerText = msg;
-        inputEl.dispatchEvent(new Event("input", { bubbles: true }));
-        inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+    // Find input using Playwright selector
+    const inputSelectors = [
+      'textarea[placeholder*="Gemini"]',
+      'textarea[placeholder*="问问"]',
+      'textarea[aria-label*="prompt"]',
+      "textarea",
+      'div[role="textbox"]',
+      '[contenteditable="true"]',
+    ];
+    let inputHandle = null;
+    for (const sel of inputSelectors) {
+      inputHandle = await page.$(sel);
+      if (inputHandle) {
+        break;
       }
-
-      const sendSelectors = [
-        'button[aria-label*="提交"], button[aria-label*="发送"]',
-        'button[aria-label*="Run"]',
-        '[aria-label*="submit"], [aria-label*="Submit"]',
-        "button[type='submit']",
-        "form button[type=submit]",
-      ];
-      let sendBtn: HTMLElement | null = null;
-      for (const sel of sendSelectors) {
-        sendBtn = document.querySelector(sel);
-        if (sendBtn && !(sendBtn as HTMLButtonElement).disabled) {
-          break;
-        }
-      }
-      if (sendBtn) {
-        sendBtn.click();
-        return { ok: true };
-      }
-      const formSubmit = inputEl.closest("form")?.querySelector("button[type=submit]");
-      if (formSubmit) {
-        (formSubmit as HTMLElement).click();
-        return { ok: true };
-      }
-      inputEl.dispatchEvent(
-        new KeyboardEvent("keydown", {
-          key: "Enter",
-          code: "Enter",
-          keyCode: 13,
-          which: 13,
-          bubbles: true,
-        }),
-      );
-      return { ok: true };
-    }, params.message);
-
-    if (!sent.ok) {
-      throw new Error(`Gemini DOM 模拟失败: ${sent.error}`);
     }
+    if (!inputHandle) {
+      throw new Error("Gemini DOM 模拟失败: 找不到输入框");
+    }
+
+    // Use Playwright native APIs for reliable input
+    await inputHandle.click();
+    await page.waitForTimeout(300);
+    await page.keyboard.type(params.message, { delay: 20 });
+    await page.waitForTimeout(300);
+    await page.keyboard.press("Enter");
+    console.log("[Gemini Web Browser] DOM: typed message and pressed Enter");
 
     console.log("[Gemini Web Browser] DOM 模拟已发送，轮询等待回复...");
 
@@ -214,10 +172,29 @@ export class GeminiWebClientBrowser {
       await new Promise((r) => setTimeout(r, pollIntervalMs));
 
       const result = await this.page.evaluate(() => {
+        // 清理不可见 Unicode 字符
         const clean = (t: string) => t.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 
-        // 排除：侧边栏、问候、建议按钮
-        const skipTexts = [
+        // 使用 innerText（排除隐藏元素和 CSS 控制的不可见内容）而非 textContent
+        const getText = (el: Element): string => {
+          const raw = (el as HTMLElement).innerText ?? "";
+          return clean(raw);
+        };
+
+        // 排除区域检测
+        const sidebarRoot = document.querySelector('[aria-label*="对话"], [class*="sidebar"], nav');
+        const inputEl = document.querySelector(
+          '[contenteditable="true"], textarea, [placeholder*="Gemini"], [placeholder*="问问"]',
+        );
+        const inputRoot =
+          inputEl?.closest("form") ??
+          inputEl?.closest("[class*='input']") ??
+          inputEl?.parentElement?.parentElement;
+
+        const isExcluded = (el: Element) => sidebarRoot?.contains(el) || inputRoot?.contains(el);
+
+        // 噪声文本过滤
+        const noisePatterns = [
           "Ask Gemini",
           "问问 Gemini",
           "Enter a prompt",
@@ -233,26 +210,24 @@ export class GeminiWebClientBrowser {
           "给我的一天注入活力",
           "升级到 Google AI Plus",
           "正在加载",
+          "复制",
+          "分享",
+          "修改",
+          "朗读",
         ];
-        const isGreeting = (t: string) =>
-          /sage[,，]?\s*你好/i.test(t) ||
-          (t.includes("你好") && (t.includes("需要") || t.includes("做些什么"))) ||
-          t.startsWith("需要我为你做些什么");
-        const isSkip = (t: string) =>
-          skipTexts.some((s) => t.includes(s)) || isGreeting(t) || t.length < 20;
+        const isNoise = (t: string) =>
+          t.length < 20 ||
+          noisePatterns.some((p) => t.includes(p)) ||
+          /^(你好|需要我|sage)/i.test(t);
 
-        const sidebarRoot = document.querySelector('[aria-label*="对话"], [class*="sidebar"], nav');
-        const notInSidebar = (el: Element) => !sidebarRoot?.contains(el);
-
-        // 排除输入区域：输入框及其父容器（含建议按钮）
-        const inputEl = document.querySelector(
-          '[contenteditable="true"], textarea, [placeholder*="Gemini"], [placeholder*="问问"]',
-        );
-        const inputRoot =
-          inputEl?.closest("form") ??
-          inputEl?.closest("[class*='input']") ??
-          inputEl?.parentElement?.parentElement;
-        const notInInputArea = (el: Element) => !inputRoot?.contains(el);
+        // 去除回复中的 UI 按钮文字（如 "复制 分享 修改 朗读" 等尾部噪声）
+        const stripTrailingUI = (t: string) =>
+          t
+            .replace(
+              /\n?\s*(复制|分享|修改|朗读|Copy|Share|Edit|Read aloud|thumb_up|thumb_down|more_vert)[\s\n]*/gi,
+              "",
+            )
+            .replace(/\s+$/, "");
 
         const main =
           document.querySelector("main") ??
@@ -262,34 +237,30 @@ export class GeminiWebClientBrowser {
         const scoped = main === document.body ? document : main;
 
         let text = "";
+
+        // 策略 1：精确匹配 Gemini 模型回复容器（只取最后一条）
         const modelSelectors = [
-          // 2025-2026 Gemini UI selectors
+          "model-response message-content", // Gemini 2025+ web component
+          '[data-message-author="model"] .message-content',
           '[data-message-author="model"]',
           '[data-sender="model"]',
-          '[data-testid*="response"]',
-          '[data-testid*="message"]',
-          '[class*="response-text"]',
+          '[class*="model-response"] [class*="markdown"]',
           '[class*="model-response"]',
-          '[class*="gemini-response"]',
-          '[class*="generation"]',
-          // Legacy/generic selectors
-          '[class*="model-turn"]',
-          '[class*="modelResponse"]',
-          '[class*="assistant-message"]',
+          '[class*="response-content"] [class*="markdown"]',
           '[class*="response-content"]',
-          "article",
-          "[class*='markdown']",
         ];
+
         for (const sel of modelSelectors) {
           const els = scoped.querySelectorAll(sel);
+          // 从最后一个元素开始（最新回复）
           for (let i = els.length - 1; i >= 0; i--) {
             const el = els[i];
-            if (!notInSidebar(el) || !notInInputArea(el)) {
+            if (isExcluded(el)) {
               continue;
             }
-            const t = clean((el as HTMLElement).textContent ?? "");
-            if (t.length >= 30 && !isSkip(t)) {
-              text = t;
+            const t = getText(el);
+            if (t.length >= 30 && !isNoise(t)) {
+              text = stripTrailingUI(t);
               break;
             }
           }
@@ -298,24 +269,31 @@ export class GeminiWebClientBrowser {
           }
         }
 
-        // 策略 2：主区域内按文本量取最后的实质内容块（排除输入区）
+        // 策略 2（受限回退）：只在 main 区域内找 markdown 渲染块，不匹配泛化选择器
         if (!text) {
-          const candidates: Array<{ el: Element; text: string }> = [];
-          scoped.querySelectorAll("p, div[class], li, span[class]").forEach((el) => {
-            if (!notInSidebar(el) || !notInInputArea(el)) {
-              return;
+          const fallbackSelectors = ['[class*="markdown"]', "article"];
+          for (const sel of fallbackSelectors) {
+            const els = scoped.querySelectorAll(sel);
+            for (let i = els.length - 1; i >= 0; i--) {
+              const el = els[i];
+              if (isExcluded(el)) {
+                continue;
+              }
+              const t = getText(el);
+              if (t.length >= 30 && !isNoise(t)) {
+                text = stripTrailingUI(t);
+                break;
+              }
             }
-            const t = clean((el as HTMLElement).textContent ?? "");
-            if (t.length > 50 && !isSkip(t) && !candidates.some((c) => c.text === t)) {
-              candidates.push({ el, text: t });
+            if (text) {
+              break;
             }
-          });
-          if (candidates.length > 0) {
-            text = candidates[candidates.length - 1].text;
           }
         }
 
-        const stopBtn = document.querySelector('[aria-label*="Stop"], [aria-label*="stop"]');
+        const stopBtn = document.querySelector(
+          '[aria-label*="Stop"], [aria-label*="stop"], [aria-label*="停止"]',
+        );
         const isStreaming = !!stopBtn;
         return { text, isStreaming };
       });
