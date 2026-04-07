@@ -161,6 +161,7 @@ if ($success) {
         "https://chatgpt.com"
         "https://www.doubao.com/chat/"
         "https://chat.qwen.ai"
+        "https://www.qianwen.com/"
         "https://www.kimi.com"
         "https://gemini.google.com/app"
         "https://grok.com"
